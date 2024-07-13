@@ -1,1 +1,78 @@
+name: CI/CD Pipeline
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        run: echo "Setting up Node.js..." && uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: echo "Installing dependencies..." && npm install
+
+      - name: Run Prettier
+        run: echo "Running Prettier..." && npm run prettier:check
+
+      - name: Run ESLint
+        run: echo "Running ESLint..." && npm run lint
+
+      - name: Run tests
+        run: echo "Running tests..." && npm test
+        env:
+          CI: true
+
+      - name: Build artifacts
+        run: echo "Building artifacts..." && npm run build
+
+      - name: Generate test coverage report
+        run: npm run coverage
+        continue-on-error: true
+
+  deploy_dev:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to Development Staging
+        run: |
+          echo "Deploying to development staging environment..."
+          npm install -g now
+          now --token $NOW_TOKEN --target development
+
+  deploy_test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to Testing Staging
+        run: |
+          echo "Deploying to testing staging environment..."
+          npm install -g now
+          now --token $NOW_TOKEN --target testing
+
+  deploy_preprod:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to Pre-Production Staging
+        run: |
+          echo "Deploying to pre-production staging environment..."
+          npm install -g now
+          now --token $NOW_TOKEN --target pre-production
