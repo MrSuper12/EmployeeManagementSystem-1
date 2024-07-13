@@ -18,7 +18,7 @@ ENV PORT=3000
 WORKDIR /app
 
 COPY package*.json ./
-RUN nom install --production --silent
+RUN npm install --production --silent
 
 EXPOSE 3000
 
