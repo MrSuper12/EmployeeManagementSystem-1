@@ -22,4 +22,4 @@ RUN nom install --production --silent
 
 EXPOSE 3000
 
-CMD["npm","start"]
+CMD ["npm","start"]
